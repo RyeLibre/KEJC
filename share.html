@@ -102,33 +102,39 @@
     </ul>
   </div>
 
-  <form id="f" novalidate>
+  <form id="f" novalidate action="https://formsubmit.co/kejc23org@gmail.com" method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="_subject" id="subject" value="KEJC submission">
+    <input type="hidden" name="_captcha" value="false">
+    <input type="hidden" name="_template" value="table">
+    <input type="hidden" name="_next" value="https://kejc.org/share.html?sent=1">
+    <input type="hidden" name="Urgent" id="urgentField" value="No">
+    <input type="hidden" name="Voice messages" id="voiceCount" value="0">
     <label class="urgent" id="urgentBox">
-      <input type="checkbox" name="urgent" id="urgent">
+      <input type="checkbox" id="urgent">
       <span><strong>URGENT</strong><br>People or land are in danger now, or this needs action in the next few days.</span>
     </label>
 
     <fieldset>
       <legend>Who are you?</legend>
       <div class="chips">
-        <label class="chip"><input type="radio" name="role" value="Research assistant"><span>Research assistant</span></label>
-        <label class="chip"><input type="radio" name="role" value="CBO"><span>Community organization (CBO)</span></label>
-        <label class="chip"><input type="radio" name="role" value="Citizen journalist"><span>Citizen journalist</span></label>
-        <label class="chip"><input type="radio" name="role" value="Community member"><span>Community member</span></label>
-        <label class="chip"><input type="radio" name="role" value="Other"><span>Other</span></label>
+        <label class="chip"><input type="radio" name="Who" value="Research assistant"><span>Research assistant</span></label>
+        <label class="chip"><input type="radio" name="Who" value="CBO"><span>Community organization (CBO)</span></label>
+        <label class="chip"><input type="radio" name="Who" value="Citizen journalist"><span>Citizen journalist</span></label>
+        <label class="chip"><input type="radio" name="Who" value="Community member"><span>Community member</span></label>
+        <label class="chip"><input type="radio" name="Who" value="Other"><span>Other</span></label>
       </div>
     </fieldset>
 
     <fieldset>
       <label class="big" for="contact">How can we contact you?</label>
       <span class="hint">Any way that is safe for you: Signal, Telegram, WhatsApp, phone, email or Facebook. Leave empty to stay anonymous.</span>
-      <input type="text" id="contact" name="contact" autocomplete="off">
+      <input type="text" id="contact" name="Contact" autocomplete="off">
     </fieldset>
 
     <fieldset>
       <label class="big" for="location">Location</label>
       <span class="hint">Village, township, river or mine site. As exact or as general as is safe.</span>
-      <input type="text" id="location" name="location" autocomplete="off">
+      <input type="text" id="location" name="Location" autocomplete="off">
       <div class="row">
         <button type="button" class="btn line" id="gps">Add my GPS location</button>
         <span class="status" id="gpsStatus"></span>
@@ -138,7 +144,7 @@
     <fieldset>
       <label class="big" for="story">What happened?</label>
       <span class="hint">What you saw, when it happened, who is affected, and who is responsible if you know. Any language is fine.</span>
-      <textarea id="story" name="story"></textarea>
+      <textarea id="story" name="Story"></textarea>
     </fieldset>
 
     <fieldset>
@@ -159,16 +165,16 @@
       <legend>Photos, video, audio or documents</legend>
       <div class="drop">
         <span class="hint">Choose one or more files</span>
-        <input type="file" id="files" multiple accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.kml,.kmz">
+        <input type="file" id="files" name="attachment" multiple accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.kml,.kmz">
       </div>
       <ul class="files" id="fileList"></ul>
     </fieldset>
 
     <fieldset class="consent">
       <legend>Can KEJC use this for research and advocacy?</legend>
-      <label><input type="radio" name="consent" value="yes"> Yes</label>
-      <label><input type="radio" name="consent" value="no"> No, for KEJC’s information only</label>
-      <label><input type="radio" name="consent" value="more"> Tell me more…</label>
+      <label><input type="radio" name="Consent" value="yes"> Yes</label>
+      <label><input type="radio" name="Consent" value="no"> No, for KEJC’s information only</label>
+      <label><input type="radio" name="Consent" value="more"> Tell me more…</label>
       <div class="more" id="more">
         <p>If you say yes, KEJC may use your material in reports, statements, campaigns and evidence shared with trusted national and international partners.</p>
         <ul>
@@ -188,9 +194,9 @@
   </form>
 
   <div class="done" id="done" tabindex="-1">
-    <h2>Test only: nothing was sent</h2>
-    <p>This form is not connected yet. When it is, this screen will confirm that KEJC received your submission.</p>
-    <p style="margin-top:16px"><button class="btn line" onclick="location.reload()">Start again</button></p>
+    <h2>Sent. Thank you.</h2>
+    <p>KEJC has received your submission. If you left contact details, someone from KEJC may contact you.</p>
+    <p style="margin-top:16px"><button class="btn line" onclick="location.href='share.html'">Send another</button></p>
   </div>
 </main>
 
@@ -255,17 +261,42 @@
   });
 
   // Consent: Tell me more
-  document.querySelectorAll('input[name=consent]').forEach(r => r.addEventListener('change', () => {
-    $('more').classList.toggle('show', document.querySelector('input[name=consent]:checked').value === 'more');
+  document.querySelectorAll('input[name=Consent]').forEach(r => r.addEventListener('change', () => {
+    $('more').classList.toggle('show', document.querySelector('input[name=Consent]:checked').value === 'more');
   }));
 
-  // Submit (test mode)
+  // Submit: merge chosen files and voice recordings into one upload, then send
   $('f').addEventListener('submit', e => {
     e.preventDefault();
-    const c = document.querySelector('input[name=consent]:checked');
+    const c = document.querySelector('input[name=Consent]:checked');
     if (!c || c.value === 'more') { $('sendStatus').textContent = 'Please choose Yes or No for consent first.'; $('more').classList.add('show'); return; }
-    $('f').style.display = 'none'; $('done').style.display = 'block'; $('done').focus();
+    if (rec && rec.state === 'recording') { $('sendStatus').textContent = 'Stop the recording first.'; return; }
+    const urgent = $('urgent').checked;
+    $('urgentField').value = urgent ? 'YES' : 'No';
+    const where = $('location').value.trim();
+    $('subject').value = (urgent ? 'URGENT: ' : '') + 'KEJC submission' + (where ? ' – ' + where.slice(0, 60) : '');
+    $('voiceCount').value = String(clips.length);
+    let total = 0;
+    try {
+      const dt = new DataTransfer();
+      [...$('files').files].forEach(f => { dt.items.add(f); total += f.size; });
+      clips.forEach((cl, i) => {
+        const t = cl.blob.type || '';
+        const ext = t.includes('mp4') ? 'm4a' : t.includes('ogg') ? 'ogg' : 'webm';
+        dt.items.add(new File([cl.blob], `voice-message-${i+1}.${ext}`, { type: t }));
+        total += cl.blob.size;
+      });
+      $('files').files = dt.files;
+    } catch (err) { /* very old browsers: chosen files still send, voice clips may not */ }
+    if (total > 10e6) { $('sendStatus').textContent = 'Files are too large for the demo (over 10 MB in total). Remove some files or send shorter clips.'; return; }
+    $('send').disabled = true; $('sendStatus').textContent = 'Sending… please keep this page open.';
+    HTMLFormElement.prototype.submit.call($('f'));
   });
+
+  if (new URLSearchParams(location.search).get('sent') === '1') {
+    $('f').style.display = 'none'; document.querySelector('.safety').style.display = 'none';
+    $('done').style.display = 'block'; $('done').focus();
+  }
 })();
 </script>
 </body>
